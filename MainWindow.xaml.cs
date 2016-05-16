@@ -1,5 +1,7 @@
 ﻿using System.Windows;
 using System.Data;
+using System.ComponentModel;
+using System;
 
 namespace SantaElizabeteKarklina
 {
@@ -29,6 +31,8 @@ namespace SantaElizabeteKarklina
 
             // Atjaunojam datus ar dzēšanu
             UpdateDataset(bankAccountToDelete);
+
+            BankAccountTextBox.Text = string.Empty;
         }
 
         private void UpdateDataset(string bankAccountForDelete)
@@ -37,11 +41,11 @@ namespace SantaElizabeteKarklina
             var dataTable = CreateCustomersTable();
             
             // Atrod visus klientus
-            MainWindowViewModel something = (MainWindowViewModel)DataContext;
-            var customers = something.Customers;
+            var customers = ((MainWindowViewModel)DataContext).Customers;
+            var customerCount = GetCurrentRecordCount(customers);
 
             // Ciklā iziet cauri visiem klientu datiem un atjauno datubāzi
-            for (int i = 0; i < something.CustomerCount; i++)
+            for (int i = 0; i < customerCount; i++)
             {
                 if (customers.MoveCurrentToPosition(i))
                 {
@@ -93,6 +97,32 @@ namespace SantaElizabeteKarklina
             dataTable.Columns.Add("accountOpenDate");
 
             return dataTable;
+        }
+
+        private int GetCurrentRecordCount(ICollectionView customers)
+        {
+            var i = 1;
+
+            try
+            {
+                customers.MoveCurrentToFirst();
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+            
+            if (customers.CurrentItem == null)
+            {
+                return 0;
+            }
+
+            while (customers.MoveCurrentToNext())
+            {
+                i++;
+            }
+
+            return i;
         }
     }
 }
